@@ -1,0 +1,1 @@
+BOT_TOKEN = '6250012808:AAF6upS-sBpLCWGhESP8rCGeyqnfXPcU5lc'  # Токен для установки соединения сервера с ботом через Telegram API
