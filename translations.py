@@ -14,7 +14,25 @@ translations = {
     'Начать работу': 'Get started',
     'Завершить работу': 'Get finished',
     'Работа завершена': 'Work completed',
-    'CAACAgIAAxkBAAEHqsRj5gntHgyhS50H9BvijKtAeEjh1wACuwIAAjrRBwABoYHYWwuDTsEuBA': 'CAACAgQAAxkBAAEHtMBj6QwIHKdwGYIo4I2XvN_vcFS7QgACPgYAAhXc8gJdj6lDzGWxCy4E'
+    'CAACAgIAAxkBAAEHqsRj5gntHgyhS50H9BvijKtAeEjh1wACuwIAAjrRBwABoYHYWwuDTsEuBA': 'CAACAgQAAxkBAAEHtMBj6QwIHKdwGYIo4I2XvN_vcFS7QgACPgYAAhXc8gJdj6lDzGWxCy4E',
+    'Выбран раздел: <b>Купить подписку</b>': 'Selected section: <b>Buy a subscription</b>',
+    'Пожалуйста, ознакомьтесь с прейскурантом': 'Please see the price list',
+    'Подписка на месяц': 'monthly subscription',
+    'Подписка на 3 месяца': '3-month subscription',
+    'Подписка на 6 месяцев': '6-month subscription',
+    'Подписка на год': 'annual subscription',
+    'В главное меню': 'Back to main menu',
+    'Ссылка для оплаты (действительна 15 минут)': 'Payment link (valid for 15 minutes)',
+    'Оплатить': 'Go to pay',
+    'Возврат в <b>главное меню</b>': 'Returned to <b>main menu</b>',
+    'Оплата произведена': 'Payment completed',
+    'Оплата отменена': 'Payment withdrawn',
+    'Текущий статус подписки': 'Current subscription state',
+    'Активна до': 'Active utill',
+    'Неактивна': 'Not active',
+    'Полученная новость содержит более 1500 символов!': 'Received news contains more than 1500 characters!',
+    '<b>Купите подписку</b>, чтобы обрабатывать новости любого размера': '<b>Buy a subscription</b> to process any size news'
+    #'₽': '$'
   }
 }
 
