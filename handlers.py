@@ -9,10 +9,18 @@ import asyncio
 import datetime
 from dateutil.relativedelta import relativedelta
 
+HELP_COMMAND = """
+Данная система предназначена для отбора медицинских новостей и выдачи оценки истинности или ложности полученной информации со степенью уверенности.\n
+1) Для того, чтобы начать отбор медицинских новостей, нажмите кнопку "Начать работу".\n
+2) Для того, чтобы завершить отбор медицинских новостей, нажмите кнопку "Завершить работу".\n
+3) Для того, чтобы изменить язык интерфейса, нажмите кнопку "Сменить язык". В полученном сообщении выберите нужный языковой пакет.\n
+4) Для покупки подписки на программную систему нажмите кнопку "Купить подписку".Подписка предоставляет возможность обработки новостных текстов с длиной более 1500 символов.
+"""
+
 async def on_startup(_) -> None:  # Метод, который предназначен для исполнения во время запуска бот-сервера
   print('Бот-сервер запущен')
 
-@dp.message_handler(commands=['start']) # Декоратор асинхронной функции для обработки команды "/start" 
+@dp.message_handler(commands=['start', 'restart']) # Декоратор асинхронной функции для обработки команды "/start" 
 async def start_command(message: Message) -> None:
   if not db.user_exists(message.from_user.id):  # Проверка на наличие пользователя в БД
     db.add_user(message.from_user.id, message.from_user.first_name, 'ru') # Добавление пользователя в БД
@@ -23,6 +31,11 @@ async def start_command(message: Message) -> None:
   await ClientStates.main_state.set() # Установка состояния конечного автомата
   await message.answer(text=(hi_message+Tg_ID)) # Отвечаем на сообщение "/start" от пользователя
   await bot.send_sticker(message.from_user.id, sticker=f'{_("CAACAgIAAxkBAAEHqsRj5gntHgyhS50H9BvijKtAeEjh1wACuwIAAjrRBwABoYHYWwuDTsEuBA",lang)}', reply_markup=get_start_reply_keyboard(lang))  # Отправляем приветственный стикер
+  await message.delete() # Удаляем сообщение "/start" от пользователя, чтобы не было спама
+
+@dp.message_handler(commands=['help'], state=ClientStates.main_state) # Декоратор асинхронной функции для обработки команды "/start" 
+async def help_command(message: Message) -> None:
+  await message.answer(HELP_COMMAND)
   await message.delete() # Удаляем сообщение "/start" от пользователя, чтобы не было спама
 
 @dp.message_handler(state=ClientStates.main_state)
@@ -52,7 +65,7 @@ async def start_button_pressed(message: Message) -> None:
         price_list_message = price_list_message + f'• {_(position[1], lang)} = {position[2]}{_("₽", lang)}\n'
       await message.answer(text=(buy_message+current_subscription_state+price_list_message), reply_markup=get_subscription_reply_keyboard(lang))
     await message.delete()
-  elif (message.text == '/start'):
+  elif (message.text == '/start' or message.text == '/restart'):
     hi_message = f'<b>{_("Здравствуйте",lang)}</b>,\
     <a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>.\n'
     Tg_ID = f'{_("Ваш Telegram ID", lang)}: <code>{message.from_user.id}</code>'
@@ -91,7 +104,11 @@ async def load_news(message: Message, state: FSMContext) -> None:
     await message.answer(text=_('Работа завершена', lang), reply_markup=get_start_reply_keyboard(lang))
     await ClientStates.main_state.set() # Установка состояния конечного автомата
     await message.delete()
-  elif (message.text == '/start'):
+  elif (message.text == '/help'):
+    await ClientStates.main_state.set()
+    await message.answer(HELP_COMMAND)
+    await message.delete()
+  elif (message.text == '/start' or message.text == '/restart'):
     hi_message = f'<b>{_("Здравствуйте",lang)}</b>,\
     <a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>.\n'
     Tg_ID = f'{_("Ваш Telegram ID", lang)}: <code>{message.from_user.id}</code>'
@@ -106,11 +123,11 @@ async def load_news(message: Message, state: FSMContext) -> None:
       if not db.news_prediction_exists(message.from_user.id, message.text, predict):
         db.download_prediction_result(message.from_user.id, message.text, predict)
       if predict>=0.6:
-        await message.answer(text=f'✅ {_("Новость является истинной с вероятностью", lang)} {(predict*100):.2f}%')
+        await message.answer(text=f'✅ {_("Степень истинности новости равна", lang)} {(predict):.2f}')
       elif predict<=0.45:
-        await message.answer(text=f'❌ {_("Новость является фейком с вероятностью", lang)} {((1-predict)*100):.2f}%')
+        await message.answer(text=f'❌ {_("Степень истинности новости равна", lang)} {(predict):.2f}')
       else:
-        await message.answer(text=f'⁉️ {_("Затрудняюсь определить, заслуживает ли полученная информация доверия", lang)}')
+        await message.answer(text=f'⁉️ {_("Затрудняюсь определить, заслуживает ли полученная информация доверия", lang)}\n{_("Степень истинности новости равна", lang)} {(predict):.2f}')
     elif (len(message.text)>1500):
       await message.answer(text=f'⚡{_("Полученная новость содержит более 1500 символов!", lang)}\n\n{_("<b>Купите подписку</b>, чтобы обрабатывать новости любого размера.", lang)}')
 
@@ -122,7 +139,7 @@ async def check_news(message: Message) -> None:
 @dp.message_handler(state=ClientStates.language_state)
 async def any_input_while_lang_state(message: Message) -> None:
   lang = db.get_lang(message.from_user.id)  # Получение языка пользователя
-  if (message.text == '/start'):
+  if (message.text == '/start' or message.text == '/restart'):
     hi_message = f'<b>{_("Здравствуйте",lang)}</b>,\
     <a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a>.\n'
     Tg_ID = f'{_("Ваш Telegram ID", lang)}: <code>{message.from_user.id}</code>'
